@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequest {
-    @NotBlank(message = "Text is required")
     private String text;
-
-    @Positive(message = "Task ID must be a positive number")
-    @Digits(integer = 10, fraction = 0, message = "Task ID must be a valid number")
     private Long taskId;
 }

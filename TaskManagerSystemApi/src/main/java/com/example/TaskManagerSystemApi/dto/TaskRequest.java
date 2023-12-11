@@ -18,6 +18,5 @@ public class TaskRequest {
     private String description;
     private TaskStatus status;
     private TaskPriority priority;
-    @Email(message = "Email doesnt exist")
     private String assignee;
 }

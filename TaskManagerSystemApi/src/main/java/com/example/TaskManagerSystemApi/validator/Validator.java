@@ -3,6 +3,7 @@ package com.example.TaskManagerSystemApi.validator;
 import com.example.TaskManagerSystemApi.dto.CommentRequest;
 import com.example.TaskManagerSystemApi.dto.RequestEntity;
 import com.example.TaskManagerSystemApi.dto.TaskRequest;
+import com.example.TaskManagerSystemApi.entity.auth.RegisterRequest;
 import com.example.TaskManagerSystemApi.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -67,6 +68,23 @@ public class Validator {
         }
         if (commentRequest.getText() == null || commentRequest.getText().equals("")) {
             throw new BadRequestException("Text is required");
+        }
+    }
+
+    public void validateRegister(RegisterRequest request) {
+        if (request.getUsername() == null) {
+            throw new BadRequestException("Email is required");
+        }
+        if ((request.getUsername().indexOf('@') == -1)
+                || (request.getUsername().indexOf('.') == -1)
+                || (request.getUsername().indexOf('@') > request.getUsername().indexOf('.'))) {
+            throw new BadRequestException("Email should be valid");
+        }
+        if (request.getPassword() == null) {
+            throw new BadRequestException("Password is required");
+        }
+        if (request.getPassword().length() < 4) {
+            throw new BadRequestException("Password must be at least 4 characters");
         }
     }
 }

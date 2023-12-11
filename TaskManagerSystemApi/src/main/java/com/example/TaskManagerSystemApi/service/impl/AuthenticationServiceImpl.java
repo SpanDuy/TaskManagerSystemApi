@@ -29,7 +29,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).get() != null) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RegistrationException("User with this username or email already exists");
         }
         User user = User.builder()
