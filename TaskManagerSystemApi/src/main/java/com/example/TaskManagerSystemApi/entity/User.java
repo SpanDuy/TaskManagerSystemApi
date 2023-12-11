@@ -1,10 +1,8 @@
 package com.example.TaskManagerSystemApi.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Table(name = "app_user")
 public class User implements UserDetails {
     @Id
@@ -32,6 +31,13 @@ public class User implements UserDetails {
 
     @Column(name = "role", nullable = false, length = 80)
     private String role = "ADMIN";
+
+    @OneToMany(mappedBy = "author",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
+    @ToString.Exclude
+    private List<Task> tasks;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

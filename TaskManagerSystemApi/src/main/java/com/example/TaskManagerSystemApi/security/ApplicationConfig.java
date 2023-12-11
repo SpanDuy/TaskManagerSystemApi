@@ -1,5 +1,6 @@
 package com.example.TaskManagerSystemApi.security;
 
+import com.example.TaskManagerSystemApi.exception.NotFoundException;
 import com.example.TaskManagerSystemApi.repository.UserRepository;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -30,8 +31,8 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found"));
+        return username -> userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("USER WITH USERNAME = " + username + " NOT FOUND"));
     }
 
     @Bean
