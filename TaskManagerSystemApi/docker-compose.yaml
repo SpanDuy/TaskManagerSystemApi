@@ -1,0 +1,25 @@
+version: '1'
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=TaskManagerSystem
+  TaskManagerSystemApi:
+    image: 'dnd-char-list-main'
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    container_name: TaskManagerSystemApi
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/TaskManagerSystem
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
