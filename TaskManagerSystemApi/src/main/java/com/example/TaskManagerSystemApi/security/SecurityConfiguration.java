@@ -19,10 +19,7 @@ public class SecurityConfiguration {
 
     private final static String[] ALLOWED_URL_FOR_ALL = new String[]{
             "/auth/**",
-            "/webjars/**", "/v2/api-docs/**",
-            "/configuration/ui/**", "/swagger-resources/**",
-            "/configuration/security/**", "/swagger-ui.html/**",
-            "/swagger-ui.html#/**","/swagger-ui/**","/v3/api-docs/**",
+            "/swagger-ui/**","/v3/api-docs/**",
             "/tasks"
     };
 

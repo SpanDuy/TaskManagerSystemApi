@@ -1,0 +1,592 @@
+openapi: 3.0.3
+info:
+  title: Task Manager System Api
+  description: Task Manager System Api
+  version: 1.0.0
+  contact:
+    email: hdhrbux@gmail.com
+servers:
+  - url: http://localhost:8080
+    description: Dev server
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - task
+      summary: User registration
+      description: Register a new user with the provided details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              Authentication user_1@gmail.com:
+                value:
+                  username: "user_1@gmail.com"
+                  password: "1111"
+                  role: "USER"
+              Authentication user_2@gmail.com:
+                value:
+                  username: "user_2@gmail.com"
+                  password: "1111"
+                  role: "USER"
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+              examples:
+                Two tasks with comments:
+                  value: '{token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyXzFAZ21haWwuY29tIiwiaWF0IjoxNzAyNDA2NTQ3LCJleHAiOjE3MDI0MDc5ODd9.z0lC0io0czRHcfOFsBnnnadFaSCmuqijUfz8E2SiE3k}'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+              examples:
+                Existing username:
+                  value: '{message: "User with this username or email already exists"}'
+
+  /auth/authentication:
+    post:
+      tags:
+        - task
+      summary: User authentication
+      description: Authenticate a user based on the provided credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+            examples:
+              Authentication user_1@gmail.com:
+                value:
+                  username: "user_1@gmail.com"
+                  password: "1111"
+              Authentication user_2@gmail.com:
+                value:
+                  username: "user_2@gmail.com"
+                  password: "1111"
+
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+              examples:
+                Two tasks with comments:
+                  value: '{"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyXzFAZ21haWwuY29tIiwiaWF0IjoxNzAyNDA2NTQ3LCJleHAiOjE3MDI0MDc5ODd9.z0lC0io0czRHcfOFsBnnnadFaSCmuqijUfz8E2SiE3k"}'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+              example:
+                Not existing user:
+                  value: '{"message": "USER WITH USERNAME = user_3@gmail.com NOT FOUND"}'
+  /tasks:
+    post:
+      tags:
+        - task
+      summary: Find all tasks
+      description: Get a list of tasks based on the provided criteria, support filtration and pagination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestEntity'
+            examples:
+              Without parameters:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With description:
+                value: '{"taskRequest": {"id": null, "title": null, "description": "This is another task description", "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status and priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title and priority:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+
+      responses:
+        '200':
+          description: Successfully retrieved the list of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              examples:
+                Two tasks with comments:
+                  value: '[{"id": 452, "title": "Another Task", "description": "This is another task description", "status": "IN_PROGRESS", "priority": "MEDIUM", "author": "vlad", "assignee": "hdhrbux@gmail.com", "comments": [{"id": 6, "text": "Hello, World!"}, {"id": 7, "text": "Nice task"}]}, {"id": 453, "title": "Another Task", "description": "This is ", "status": "COMPLETED", "priority": "MEDIUM", "author": "hdhrbux@gmail.com", "assignee": "vlad", "comments": [{"id": 2, "text": "qwerty"}, {"id": 3, "text": "qwerty"}, {"id": 4, "text": "qwerty"}, {"id": 5, "text": "qwerty"}]}]'
+                When no tasks:
+                  value: '[]'
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+              examples:
+                With not positive size of page:
+                  value: '{"message": "Size is positive"}'
+                With negative number of page:
+                  value: '{"message": "Page is not negative"}'
+                When pagination is null:
+                  value: '{"message": "Pagination is required"}'
+                When task request is null:
+                  value: '{"message": "Task Request is required"}'
+  /tasks/author/{author}:
+    post:
+      tags:
+        - task
+      summary: Find tasks by author
+      description: Get a list of tasks created by a specific author, support filtration and pagination
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: author
+          in: path
+          description: The author's username
+          required: true
+          schema:
+            type: string
+          examples:
+            Author user_1@gmail.com:
+              value: 'user_1@gmail.com'
+            Author user_2@gmail.com:
+              value: 'user_2@gmail.com'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestEntity'
+            examples:
+              Without parameters:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With description:
+                value: '{"taskRequest": {"id": null, "title": null, "description": "This is another task description", "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status and priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title and priority:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+
+      responses:
+        '200':
+          description: Successfully retrieved the list of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              examples:
+                '':
+                  value: ''
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+  /tasks/assignee/{assignee}:
+    post:
+      tags:
+        - task
+      summary: Find tasks by assignee
+      description: Get a list of tasks assigned to a specific user, support filtration and pagination
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: assignee
+          in: path
+          description: The assignee's username
+          required: true
+          schema:
+            type: string
+          examples:
+            Author user_1@gmail.com:
+              value: 'user_1@gmail.com'
+            Author user_2@gmail.com:
+              value: 'user_2@gmail.com'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestEntity'
+            examples:
+              Without parameters:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With description:
+                value: '{"taskRequest": {"id": null, "title": null, "description": "This is another task description", "status": null, "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": null, "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With status and priority:
+                value: '{"taskRequest": {"id": null, "title": null, "description": null, "status": "IN_PROGRESS", "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+              With title and priority:
+                value: '{"taskRequest": {"id": null, "title": "Another Task", "description": null, "status": null, "priority": "MEDIUM", "assignee": null}, "pagination": {"page": 0, "size": 2}}'
+
+      responses:
+        '200':
+          description: Successfully retrieved the list of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+  /tasks/{id}:
+    get:
+      tags:
+        - task
+      summary: Find task by ID
+      description: Get details of a task by its unique ID
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the task
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved the task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+
+    delete:
+      tags:
+        - task
+      summary: Delete a task by ID
+      description: Delete a task based on its unique ID
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the task to be deleted
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+
+  /tasks/add:
+    post:
+      tags:
+        - task
+      summary: Add a new task
+      description: Create a new task based on the provided details
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+            examples:
+              First task for user_1@gmail.com:
+                value: '{"id": 0, "title": "Task 1", "description": "Complete Project Report", "status": "IN_PROGRESS", "priority": "MEDIUM", "assignee": "user_1@gmail.com"}'
+              Second task for user_1@gmail.com:
+                value: '{"id": 0, "title": "Task 2", "description": "Review and Revise Marketing Strategy", "status": "AWAITING", "priority": "LOW", "assignee": "user_1@gmail.com"}'
+              Third task for user_1@gmail.com:
+                value: '{"id": 0, "title": "Task 3", "description": "Prepare Presentation for Board Meeting", "status": "IN_PROGRESS", "priority": "HIGH", "assignee": "user_1@gmail.com"}'
+              First task for user_2@gmail.com:
+                value: '{"id": 0, "title": "Task 1", "description": "Resolve Critical Software Bug", "status": "COMPLETED", "priority": "HIGH", "assignee": "user_2@gmail.com"}'
+              Second task for user_2@gmail.com:
+                value: '{"id": 0, "title": "Task 2", "description": "Complete Project Report", "status": "AWAITING", "priority": "MEDIUM", "assignee": "user_2@gmail.com"}'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              examples:
+                First task for user_1@gmail.com:
+                  value: '{"id": 0, "title": "Task 1", "description": "Complete Project Report", "status": "IN_PROGRESS", "priority": "MEDIUM", "assignee": "user_1@gmail.com"}'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+
+  /tasks/update:
+    put:
+      tags:
+        - task
+      summary: Update an existing task
+      description: Modify an existing task based on the provided details
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskResponse'
+            examples:
+              Change priority for task 1 of user_1@gmail.com:
+                value: '{"id": 1, "title": "Task 1", "description": "Complete Project Report", "status": "IN_PROGRESS", "priority": "LOW", "assignee": "user_1@gmail.com"}'
+
+      responses:
+        '201':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+
+  /tasks/comment/add:
+    post:
+      tags:
+        - task
+      summary: Add a comment to a task
+      description: Create and add a comment to an existing task
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequest'
+            examples:
+              Comment task with id = 1:
+                value: '{"text": "Comment 1", "taskId": "1"}'
+              Comment task with id = 2:
+                value: '{"text": "Comment 1", "taskId": "2"}'
+
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseException'
+
+components:
+  schemas:
+    CommentRequest:
+      type: object
+      properties:
+        text:
+          type: string
+        taskId:
+          type: integer
+          format: int64
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+
+    RequestEntity:
+      type: object
+      properties:
+        taskRequest:
+          $ref: '#/components/schemas/TaskRequest'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    TaskRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [ PENDING, IN_PROGRESS, COMPLETED ]
+        priority:
+          type: string
+          enum: [ LOW, MEDIUM, HIGH ]
+        assignee:
+          type: string
+
+    TaskResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [ PENDING, IN_PROGRESS, COMPLETED ]
+        priority:
+          type: string
+          enum: [ LOW, MEDIUM, HIGH ]
+        author:
+          type: string
+        assignee:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        text:
+          type: string
+
+    AuthenticationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    AuthenticationResponse:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+      required:
+        - username
+        - password
+        - role
+
+    ResponseException:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
