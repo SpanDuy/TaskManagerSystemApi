@@ -2,10 +2,8 @@
 FROM openjdk:17
 
 # Устанавливаем рабочую директорию внутри контейнера
-WORKDIR /TaskManagerSystemApi
+WORKDIR /app
 
-# Копируем JAR-файл приложения в контейнер
-COPY target/TaskManagerSystemApi-0.0.1-SNAPSHOT.jar .
+COPY ./. ./.
 
-# Определяем команду для запуска приложения
-CMD ["java", "-jar", "TaskManagerSystemApi-0.0.1-SNAPSHOT.jar"]
+CMD ["./mvnw", "spring-boot:run"]

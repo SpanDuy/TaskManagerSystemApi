@@ -1,4 +1,4 @@
-version: '1'
+version: '3'
 
 services:
   postgres:
@@ -10,7 +10,7 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=TaskManagerSystem
   TaskManagerSystemApi:
-    image: 'dnd-char-list-main'
+    image: 'task-manager-system'
     build:
       context: .
     ports:
